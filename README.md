@@ -26,6 +26,10 @@ SUDEPI (Suara Deteksi Rupiah) adalah aplikasi Android yang membantu penyandang t
 
 Deteksi uang (YOLO26n dengan ONNX Runtime), panduan suara (text-to-speech Bahasa Indonesia), dan umpan balik getaran semuanya berjalan di perangkat. Aplikasi tidak memerlukan internet, tidak menampilkan iklan, dan tidak mengirim gambar kamera maupun rekaman suara ke server mana pun.
 
+<p align="center">
+  <img src="./docs/images/sudepi-feature-strip.png" alt="Empat fitur utama alur penggunaan SUDEPI" width="100%" />
+</p>
+
 ---
 
 ## Unduh Aplikasi
@@ -49,40 +53,40 @@ Berkas instalasi (.apk) tersedia di halaman [GitHub Releases](https://github.com
 
 SUDEPI menggunakan layar penuh sebagai area gestur, sehingga pengguna tidak perlu mencari tombol kecil. Alur aplikasi terdiri dari empat layar yang berurutan.
 
-| Layar | Ketuk 1x | Ketuk 2x | Tahan Layar | Usap ke Kiri (maju) | Usap ke Kanan (mundur) |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| 1. Mode Siaga (deteksi satu lembar) | Mengulang panduan atau membacakan nominal yang terdeteksi | Menyalakan atau mematikan senter kamera | - | Memulai transaksi belanja (ke Layar 2) | - |
-| 2. Total Belanja (input suara atau angka) | Membacakan status nominal belanja | Membuka atau menutup papan angka cadangan | Push-to-talk: tahan layar, sebutkan total belanja, lalu lepaskan | Lanjut ke Uang Diberikan (Layar 3) | Kembali ke Mode Siaga |
-| 3. Uang Diberikan (input suara atau angka) | Membacakan uang yang dibayarkan dan menghitung kembalian | Membuka atau menutup papan angka cadangan | Push-to-talk: tahan layar dan sebutkan uang yang dibayarkan | Memulai pemindaian uang kembalian (jika ada kembalian) | Kembali ke Total Belanja |
-| 4. Cek Kembalian (pemindaian bertahap) | Membacakan target kembalian, jumlah terkumpul, dan sisa | Menyalakan atau mematikan senter kamera | Mengulang hitungan kembalian dari Rp0 | Menyelesaikan transaksi (kembali ke Mode Siaga) | Kembali ke Uang Diberikan |
+| Layar | Ketuk 1x | Ketuk 2x | Tahan Layar | Usap ke Kiri (maju) | Usap ke Kanan (mundur) | Usap Atas / Bawah |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 1. Mode Siaga (deteksi satu lembar) | Membacakan panduan orientasi layar Mode Siaga | Menyalakan atau mematikan senter kamera | - | Memulai transaksi belanja (ke Layar 2) | - | - |
+| 2. Total Belanja (input suara atau angka) | Membacakan status nominal belanja dan panduan | - | Push-to-talk: tahan layar, sebutkan total belanja, lalu lepaskan | Lanjut ke Uang Diberikan (Layar 3) | Kembali ke Mode Siaga | Membuka atau menutup papan angka cadangan |
+| 3. Uang Diberikan (input suara atau angka) | Membacakan uang yang dibayarkan dan menghitung kembalian | - | Push-to-talk: tahan layar dan sebutkan uang yang dibayarkan | Memulai pemindaian uang kembalian (atau selesai jika uang pas) | Kembali ke Total Belanja | Membuka atau menutup papan angka cadangan |
+| 4. Cek Kembalian (pemindaian bertahap) | Membacakan target kembalian, jumlah terkumpul, dan sisa | Menyalakan atau mematikan senter kamera | Mengulang hitungan kembalian dari Rp 0 | Menyelesaikan transaksi (kembali ke Mode Siaga) | Kembali ke Uang Diberikan | - |
 
 ### Pola Getaran per Pecahan
 
 Selain menyebutkan nominal melalui suara, SUDEPI memberikan pola getaran yang berbeda untuk setiap pecahan. Pola ini membantu pengguna mengonfirmasi hasil deteksi di lingkungan yang bising.
 
-- Rp1.000, Rp2.000, dan Rp5.000: masing-masing 1, 2, dan 3 getaran pendek (55 ms).
-- Rp10.000, Rp20.000, dan Rp50.000: masing-masing 1, 2, dan 3 getaran sedang (150 ms).
-- Rp100.000: 1 getaran panjang (420 ms).
+- Rp1.000, Rp2.000, dan Rp5.000: masing-masing 1, 2, dan 3 getaran pendek (70 ms).
+- Rp10.000 dan Rp20.000: masing-masing 1 dan 2 getaran sedang (220 ms).
+- Rp50.000 dan Rp100.000: masing-masing 1 dan 2 getaran panjang (450 ms).
 
 ---
 
 ## Fitur Teknis dan Spesifikasi Model
 
-1. Detektor YOLO26n end-to-end tanpa NMS (ONNX FP32, 9,49 MB)
+1. Detektor YOLO26n end-to-end tanpa NMS (ONNX FP32, 9,40 MB)
    - Model dilatih pada 88.387 citra uang kertas Rupiah yang telah dikurasi, dengan pembagian data tanpa kebocoran antar-kelompok: 81.407 citra latih, 3.490 citra validasi, dan 3.490 citra uji.
-   - Pada data uji, model mencapai mAP@50 sebesar 99,28% (precision 98,94%, recall 98,53%, mAP@50:95 93,86%). Rata-rata waktu inferensi di CPU adalah 24,96 ms per citra.
+   - Pada data uji, model mencapai mAP@50 sebesar 99,28% (precision 98,51%, recall 97,68%, mAP@50:95 92,85%). Rata-rata waktu inferensi di CPU adalah 24,96 ms per citra.
    - Keluaran model berupa tensor `[1, 300, 6]` yang langsung dapat dipakai, sehingga tidak memerlukan pascaproses Non-Maximum Suppression (NMS).
 
 2. Gerbang kepercayaan tiga tingkat dan penanganan uang terlipat
-   - Ambang kepercayaan disesuaikan dengan kemiripan warna antar pecahan: 86% untuk Rp2.000 dan Rp20.000 (kelompok abu-hijau), 80% untuk Rp5.000, Rp50.000, dan Rp100.000, serta 74% untuk Rp1.000 dan Rp10.000.
-   - Hasil diterima setelah tiga frame berturut-turut mengonfirmasi pecahan yang sama. Rasio geometri kotak deteksi juga diperiksa untuk mencegah salah baca pada uang yang terlipat separuh.
+   - Ambang kepercayaan disesuaikan per kelompok pecahan: 86% untuk Rp20.000, Rp50.000, dan Rp100.000, 80% untuk Rp1.000, Rp5.000, dan Rp10.000, serta 74% untuk Rp2.000 (disertai veto kompetisi sinyal uang terlipat).
+   - Hasil baru dikunci setelah minimal empat dari lima frame terakhir mengonfirmasi pecahan yang sama. Ukuran serta posisi kotak deteksi juga diperiksa untuk mencegah salah baca pada uang yang terlipat.
 
 3. Senter otomatis berdasarkan keberadaan objek
-   - Tingkat pencahayaan rata-rata (kanal Y pada frame YUV420 dari kamera) dipantau secara real-time. Senter menyala otomatis saat kondisi redup dan ada objek di depan kamera, lalu dimatikan ketika pengguna berpindah ke layar input suara.
+   - Tingkat pencahayaan rata-rata (kanal Y pada frame YUV420 dari kamera) dipantau secara real-time. Senter menyala otomatis saat kondisi redup dan objek uang terdeteksi di depan kamera, lalu dimatikan kembali saat uang dijauhkan atau ketika pengguna berpindah ke layar input suara.
 
 4. Push-to-talk dengan transkripsi langsung
-   - Transkripsi suara Bahasa Indonesia diproses begitu jari dilepas dari layar. Parser mendukung angka standar, koreksi dalam satu ucapan dengan kata "ulangi", serta istilah sehari-hari seperti "goceng", "ceban", dan "goban".
-   - Papan angka yang aksesibel tersedia sebagai alternatif input.
+   - Transkripsi suara Bahasa Indonesia diproses begitu jari dilepas dari layar. Parser mendukung angka standar, koreksi beruntun dalam satu tahanan ucapan (seperti kata "ulangi"), serta istilah sehari-hari seperti "goceng", "ceban", dan "goban".
+   - Papan angka kontras tinggi tersedia sebagai alternatif input dengan mengusap layar ke atas.
 
 ---
 
