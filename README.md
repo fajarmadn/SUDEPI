@@ -73,19 +73,19 @@ Selain menyebutkan nominal melalui suara, SUDEPI memberikan pola getaran yang be
 ## Fitur Teknis dan Spesifikasi Model
 
 1. Detektor YOLO26n tanpa pascaproses NMS (ONNX FP32, 9,40 MB)
-   - Model dilatih pada 88.387 citra uang kertas Rupiah yang telah dikurasi, dengan pembagian data tanpa kebocoran antar-kelompok: 81.407 citra latih, 3.490 citra validasi, dan 3.490 citra uji.
-   - Pada data uji, model mencapai mAP@50 sebesar 99,28% (precision 98,51%, recall 97,68%, mAP@50:95 92,85%). Rata-rata waktu inferensi di CPU adalah 24,96 ms per citra.
+   - Model dilatih pada 88.387 citra uang kertas Rupiah yang telah dikurasi, dengan pembagian data tanpa kebocoran antarkelompok: 81.407 citra latih, 3.490 citra validasi, dan 3.490 citra uji.
+   - Pada data uji, model mencapai mAP@50 sebesar 99,28% (precision 98,51%, recall 97,68%, mAP@50-95 92,85%). Rata-rata waktu inferensi di CPU adalah 24,96 ms per citra.
    - Arsitektur YOLO26n dilatih secara *one-to-one* tanpa *Distribution Focal Loss* (DFL). Berkas ONNX produksi menghasilkan tensor `[1, 11, 8400]` (bridge Kotlin mendukung adaptif `[1, 11, 8400]` maupun `[1, 300, 6]`) yang dipilih langsung melalui prioritas posisi tengah dan luas kotak dalam satu lintasan tanpa operasi *Non-Maximum Suppression* (NMS).
 
 2. Ambang kepercayaan berjenjang dan penyaringan uang terlipat
    - Batas kepercayaan minimum dibedakan menjadi tiga kelompok: 86% untuk Rp20.000, Rp50.000, dan Rp100.000, 80% untuk Rp1.000, Rp5.000, dan Rp10.000, serta 74% untuk Rp2.000.
-   - Hasil baru dikunci setelah minimal empat dari lima frame terakhir mengonfirmasi pecahan yang sama. Apabila terdeteksi skor kelas sekunder yang meragukan atau keyakinan belum memadai akibat uang terlipat selama lebih dari 2,2 detik, sistem menahan hasil dan memutar instruksi untuk merentangkan uang.
+   - Hasil baru dikunci setelah minimal empat dari lima frame terakhir mengonfirmasi pecahan yang sama. Apabila terdeteksi skor kelas sekunder yang meragukan atau keyakinan belum memadai akibat uang terlipat selama minimal 2,2 detik, sistem menahan hasil dan memutar instruksi untuk merentangkan uang.
 
 3. Pengaturan senter otomatis pada kondisi redup
    - Tingkat kecerahan rata-rata (kanal Y pada frame YUV420 kamera) dipantau secara langsung. Senter dinyalakan otomatis saat pencahayaan redup dan objek uang terdeteksi di depan kamera, lalu dimatikan kembali 1,8 detik setelah uang dijauhkan atau ketika berpindah ke layar input suara.
 
 4. Masukan suara tekan-dan-tahan (*push-to-talk*) dan papan angka cadangan
-   - Ucapan nominal Bahasa Indonesia diurai menggunakan pencocokan kata berbasis aturan begitu jari dilepas dari layar. Parser mendukung angka standar, koreksi beruntun dalam satu tahanan ucapan (seperti kata "ulangi"), serta istilah sehari-hari seperti "goceng", "ceban", dan "goban".
+   - Ucapan nominal Bahasa Indonesia diurai secara langsung saat layar ditahan menggunakan pencocokan kata berbasis aturan, lalu difinalisasi begitu jari dilepas. Parser mendukung angka standar, koreksi beruntun dalam satu tahanan ucapan (seperti kata "ulangi"), serta istilah sehari-hari seperti "goceng", "ceban", dan "goban".
    - Papan angka kontras tinggi berukuran 3x4 tersedia sebagai alternatif input dengan mengusap layar ke atas.
 
 ---
